@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abstruse Goose Archive</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@7/dist/fuse.min.js"></script>
+</head>
+<body>
+
+  <div id="loading-overlay" aria-live="polite">Loading archive…</div>
+
+  <header id="site-header">
+    <a href="#" id="logo-link" aria-label="Abstruse Goose Archive home">
+      <img src="AGlogo.PNG" alt="Abstruse Goose" id="logo">
+    </a>
+    <div id="search-container" role="search">
+      <input
+        type="search"
+        id="search-input"
+        placeholder="Search comics… (or press /)"
+        autocomplete="off"
+        aria-label="Search comics"
+        aria-autocomplete="list"
+        aria-controls="search-results"
+        aria-expanded="false"
+      >
+      <div id="search-results" role="listbox" aria-label="Search results" hidden></div>
+    </div>
+  </header>
+
+  <main id="comic-viewer">
+    <nav id="comic-nav" aria-label="Comic navigation">
+      <button id="btn-prev" aria-label="Previous comic" disabled>&#8592; Prev</button>
+      <div id="comic-info">
+        <span id="comic-number" aria-label="Comic number"></span>
+        <span id="comic-title"></span>
+      </div>
+      <button id="btn-next" aria-label="Next comic" disabled>Next &#8594;</button>
+    </nav>
+
+    <div id="comic-display">
+      <img id="comic-image" alt="" loading="lazy">
+      <div id="comic-missing" hidden>
+        <p>This comic was removed from the original archive.</p>
+      </div>
+    </div>
+
+    <div id="comic-comment" hidden></div>
+
+    <div id="comic-footer">
+      <button id="btn-random">Random</button>
+      <span id="comic-counter" aria-live="polite"></span>
+    </div>
+  </main>
+
+  <footer id="site-footer">
+    <p>
+      Abstruse Goose by an anonymous author &mdash;
+      archived under
+      <a href="LICENSE" target="_blank" rel="noopener">CC BY-NC 3.0</a>.
+      Original site went offline in 2023.
+    </p>
+  </footer>
+
+  <script src="js/app.mjs" type="module"></script>
+</body>
+</html>

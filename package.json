@@ -1,0 +1,12 @@
+{
+  "name": "abstruse-goose-archive",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:force": "node scripts/build.mjs --force"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.56.0"
+  }
+}
