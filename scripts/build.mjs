@@ -10,7 +10,7 @@ const FORCE = process.argv.includes('--force');
 
 const TRANSCRIPT_PROMPT =
   'You are transcribing a webcomic for accessibility and search purposes. ' +
-  'Provide: (1) a brief scene description (setting, characters, art style), ' +
+  'Provide: (1) a brief scene description (setting, characters, visual style — do NOT compare to other webcomics like XKCD or SMBC), ' +
   '(2) the exact text of all dialogue, captions, labels, and equations in reading order, ' +
   '(3) any visual jokes or puns that depend on the image itself. ' +
   'Be thorough but concise. Start with the scene description, then transcribe text in reading order.';
