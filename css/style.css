@@ -449,6 +449,66 @@ kbd {
 
 @media (max-width: 600px) { kbd { display: none; } }
 
+/* ── Keyboard shortcuts dialog ───────────────────────────────────────────── */
+
+#shortcuts-dialog {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--text);
+  padding: 0;
+  width: min(460px, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  /* Centre via margin since <dialog> ignores flexbox/grid on the viewport */
+  margin: auto;
+}
+
+#shortcuts-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+#shortcuts-inner {
+  padding: 1.5rem;
+}
+
+#shortcuts-inner h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+#shortcuts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#shortcuts-table td {
+  padding: 0.4rem 0.5rem;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+#shortcuts-table tr:last-child td { border-bottom: none; }
+
+#shortcuts-table td:first-child {
+  white-space: nowrap;
+  color: var(--text-muted);
+  width: 1%;
+  padding-right: 1.25rem;
+}
+
+/* Always show kbd inside the dialog, even on mobile */
+#shortcuts-dialog kbd { display: inline-block !important; }
+
+#btn-close-shortcuts {
+  display: block;
+  margin-top: 1.25rem;
+  margin-left: auto;
+}
+
 /* ── Nav arrow / label visibility ───────────────────────────────────────── */
 
 /* Desktop: hide the plain arrow span, show kbd + label */

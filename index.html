@@ -126,6 +126,27 @@
     </p>
   </footer>
 
+  <!-- ── Keyboard shortcuts dialog ────────────────────────────────────────── -->
+  <dialog id="shortcuts-dialog" aria-label="Keyboard shortcuts">
+    <div id="shortcuts-inner">
+      <h2>Keyboard shortcuts</h2>
+      <table id="shortcuts-table">
+        <tbody>
+          <tr><td><kbd>←</kbd> / <kbd>A</kbd> / <kbd>J</kbd></td><td>Previous comic</td></tr>
+          <tr><td><kbd>→</kbd> / <kbd>D</kbd> / <kbd>K</kbd></td><td>Next comic</td></tr>
+          <tr><td><kbd>R</kbd></td><td>Random comic</td></tr>
+          <tr><td><kbd>/</kbd></td><td>Focus search</td></tr>
+          <tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td><td>Navigate search results</td></tr>
+          <tr><td><kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd></td><td>Toggle Comment / Transcript / Visual description</td></tr>
+          <tr><td><kbd>H</kbd> / <kbd>I</kbd></td><td>Go to index</td></tr>
+          <tr><td><kbd>?</kbd></td><td>Show this dialog</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Close / dismiss</td></tr>
+        </tbody>
+      </table>
+      <button id="btn-close-shortcuts">Close</button>
+    </div>
+  </dialog>
+
   <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.mjs');
   </script>

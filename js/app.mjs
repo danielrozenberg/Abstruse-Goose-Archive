@@ -505,29 +505,40 @@ function handleKeydown(e) {
     return;
   }
 
+  // Let the native dialog handle its own Escape
+  if (document.getElementById('shortcuts-dialog').open) return;
+
   if (e.altKey || e.metaKey) return;
 
   switch (e.key) {
     case 'ArrowLeft':
+    case 'a': case 'A':
+    case 'j': case 'J':
       if (state.currentIndex > 0) navigate('/' + state.comics[state.currentIndex - 1].number);
       break;
     case 'ArrowRight':
+    case 'd': case 'D':
+    case 'k': case 'K':
       if (state.currentIndex < state.comics.length - 1) navigate('/' + state.comics[state.currentIndex + 1].number);
+      break;
+    case 'h': case 'H':
+    case 'i': case 'I':
+      navigate('/index');
       break;
     case '/':
       e.preventDefault();
       document.getElementById('search-input').focus();
       document.getElementById('search-input').select();
       break;
-    case 'r':
-    case 'R':
+    case 'r': case 'R':
       if (e.ctrlKey) return;
       navigate('/' + state.comics[Math.floor(Math.random() * state.comics.length)].number);
       break;
-    case '1':
-    case '2':
-    case '3':
+    case '1': case '2': case '3':
       if (!document.getElementById('view-comic').hidden) toggleTab(parseInt(e.key, 10));
+      break;
+    case '?':
+      document.getElementById('shortcuts-dialog').showModal();
       break;
   }
 }
@@ -615,4 +626,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.addEventListener('keydown', handleKeydown);
+
+  // Shortcuts dialog
+  const dialog = document.getElementById('shortcuts-dialog');
+  document.getElementById('btn-close-shortcuts').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
 });
