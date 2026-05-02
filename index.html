@@ -33,6 +33,16 @@
       >
       <div id="search-results" role="listbox" aria-label="Search results" hidden></div>
     </div>
+    <button id="btn-random" aria-label="Random comic">
+      <svg class="shuffle-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="16 3 21 3 21 8"/>
+        <line x1="4" y1="20" x2="21" y2="3"/>
+        <polyline points="21 16 21 21 16 21"/>
+        <line x1="15" y1="15" x2="21" y2="21"/>
+        <line x1="4" y1="4" x2="9" y2="9"/>
+      </svg>
+      <span class="random-label">Random </span><kbd>R</kbd>
+    </button>
   </header>
 
   <!-- ── Comic view ─────────────────────────────────────────────────────────── -->
@@ -40,12 +50,12 @@
     <main id="comic-main">
 
       <nav id="comic-nav" aria-label="Comic navigation">
-        <a id="btn-prev" aria-label="Previous comic">&#8592; Prev</a>
+        <a id="btn-prev" aria-label="Previous comic"><span class="nav-arrow" aria-hidden="true">&#8592;</span><kbd aria-hidden="true">&#8592;</kbd><span class="nav-label"> Prev</span></a>
         <div id="comic-info">
           <span id="comic-number"></span>
           <span id="comic-title"></span>
         </div>
-        <a id="btn-next" aria-label="Next comic">Next &#8594;</a>
+        <a id="btn-next" aria-label="Next comic"><span class="nav-label">Next </span><kbd aria-hidden="true">&#8594;</kbd><span class="nav-arrow" aria-hidden="true">&#8594;</span></a>
       </nav>
 
       <div id="comic-display">
@@ -58,19 +68,28 @@
         </div>
       </div>
 
-      <div id="comic-comment" hidden></div>
-
-      <div id="comic-transcript-area">
-        <button id="btn-transcript">Show transcript</button>
-        <div id="transcript-panel" hidden>
-          <div id="transcript-content"></div>
+      <div id="info-tabs">
+        <div id="tab-bar" role="tablist" aria-label="Comic information">
+          <button class="tab-btn" data-tab="1" role="tab" aria-selected="false">Comment <kbd>1</kbd></button>
+          <button class="tab-btn" data-tab="2" role="tab" aria-selected="false">Transcript <kbd>2</kbd></button>
+          <button class="tab-btn" data-tab="3" role="tab" aria-selected="false">Visual description <kbd>3</kbd></button>
+        </div>
+        <div id="tab-panel-wrapper">
+          <div id="tab-panel" role="tabpanel">
+            <div id="tab-panel-inner"></div>
+          </div>
         </div>
       </div>
 
-      <div id="comic-footer">
-        <button id="btn-random">Random</button>
-      </div>
+    </main>
+  </div>
 
+  <!-- ── 404 view ──────────────────────────────────────────────────────────── -->
+  <div id="view-404" class="view" hidden>
+    <main id="not-found-main">
+      <h1>Page not found</h1>
+      <p>There's no comic at this address.</p>
+      <a href="./">Browse all comics →</a>
     </main>
   </div>
 
@@ -78,6 +97,23 @@
   <div id="view-index" class="view" hidden>
     <main id="index-main">
       <h1>All Comics <span id="index-count"></span></h1>
+
+      <div id="index-about">
+        <p><strong>Abstruse Goose</strong> was an anonymous webcomic about science, mathematics,
+        and philosophy, published from around 2008 until the original site went offline in 2023.
+        This archive was assembled from the Wayback Machine to preserve the strips.</p>
+
+        <p>A few things to know: <strong>some strips are missing</strong> — they were deleted from
+        the original site or couldn't be recovered.
+        The <strong>transcripts and visual descriptions</strong> shown for each comic were generated
+        automatically by an AI and may contain errors or hallucinations.
+        This web app was entirely <strong>vibe-coded</strong>.</p>
+
+        <p>Contributions are welcome — fixes to transcripts, descriptions, or the app itself can be
+        submitted as pull requests on
+        <a href="https://github.com/danielrozenberg/Abstruse-Goose-Archive" target="_blank" rel="noopener">GitHub</a>.</p>
+      </div>
+
       <div id="index-list"></div>
     </main>
   </div>
@@ -86,7 +122,7 @@
     <p>
       Abstruse Goose by an anonymous author &mdash;
       archived under <a href="LICENSE" target="_blank" rel="noopener">CC BY-NC 3.0</a>.
-      Original site went offline in 2023.
+      Original site went offline in 2023
     </p>
   </footer>
 
