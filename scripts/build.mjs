@@ -9,11 +9,10 @@ const OUTPUT_FILE = join(ROOT, 'data', 'comics.json');
 const FORCE = process.argv.includes('--force');
 
 const TRANSCRIPT_PROMPT =
-  'You are transcribing a webcomic for accessibility and search purposes. ' +
-  'Provide: (1) a brief scene description (setting, characters, visual style — do NOT compare to other webcomics like XKCD or SMBC), ' +
-  '(2) the exact text of all dialogue, captions, labels, and equations in reading order, ' +
-  '(3) any visual jokes or puns that depend on the image itself. ' +
-  'Be thorough but concise. Start with the scene description, then transcribe text in reading order.';
+  'You are transcribing a webcomic for accessibility and search purposes.\n' +
+  'Output a JSON object (no markdown code fences, no preamble) with exactly these fields:\n' +
+  '{"scene":"1-2 sentences: setting, characters, visual style. No comparisons to other webcomics like XKCD or SMBC.","text":"all dialogue, captions, labels, equations verbatim in reading order","visualNote":"visual jokes/puns that require seeing the image; empty string if none"}\n' +
+  'Rules: neutral language, exact text verbatim, concise.';
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -44,6 +43,26 @@ function parseMd(filepath) {
   return { number, title, image, imageExists, comment, commentHtml };
 }
 
+function parseTranscript(raw) {
+  try {
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const parsed = JSON.parse(cleaned);
+    return {
+      scene: String(parsed.scene ?? '').trim(),
+      text: String(parsed.text ?? '').trim(),
+      visualNote: String(parsed.visualNote ?? '').trim(),
+    };
+  } catch {
+    return { scene: '', text: raw.trim(), visualNote: '' };
+  }
+}
+
+function hasTranscript(t) {
+  if (!t) return false;
+  if (typeof t === 'string') return t.length > 0;
+  return (t.text?.length ?? 0) > 0 || (t.scene?.length ?? 0) > 0;
+}
+
 async function generateTranscript(client, meta, retrying = false) {
   const imagePath = join(COMICS_DIR, meta.image);
   const imageBytes = readFileSync(imagePath);
@@ -61,7 +80,7 @@ async function generateTranscript(client, meta, retrying = false) {
         ],
       }],
     });
-    return response.content[0].text.trim();
+    return parseTranscript(response.content[0].text.trim());
   } catch (err) {
     if (err instanceof Anthropic.RateLimitError && !retrying) {
       console.warn(`  Rate limited on comic #${meta.number}, waiting 60s...`);
@@ -69,7 +88,7 @@ async function generateTranscript(client, meta, retrying = false) {
       return generateTranscript(client, meta, true);
     }
     console.error(`  Failed to transcribe comic #${meta.number}: ${err.message}`);
-    return '';
+    return { scene: '', text: '', visualNote: '' };
   }
 }
 
@@ -111,8 +130,8 @@ async function main() {
     let transcript = '';
 
     if (!meta.imageExists) {
-      transcript = '';
-    } else if (existing?.transcript) {
+      transcript = { scene: '', text: '', visualNote: '' };
+    } else if (hasTranscript(existing?.transcript)) {
       transcript = existing.transcript;
       skipped++;
     } else {

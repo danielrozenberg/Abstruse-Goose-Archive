@@ -1,8 +1,7 @@
 /**
- * Post-processes all transcripts in data/comics.json to enforce a consistent
- * style and remove unwanted comparisons (e.g. "XKCD style", "SMBC style").
- *
- * Text-only — no image API calls. Fast and cheap.
+ * Re-normalizes all transcripts in data/comics.json.
+ * Converts them to a consistent structured format: { scene, text, visualNote }.
+ * Text-only — no image API calls.
  *
  * Usage:
  *   node --env-file=.env scripts/normalize-transcripts.mjs
@@ -16,56 +15,72 @@ import { fileURLToPath } from 'url';
 const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 const OUTPUT_FILE = join(ROOT, 'data', 'comics.json');
 
-const NORMALIZE_PROMPT = `You are editing a webcomic transcript for consistency and accuracy.
-
-Rewrite the transcript to follow this exact structure:
-1. Scene: One or two sentences describing the setting, characters, and visual style. Do NOT compare to other webcomics (remove any references to XKCD, SMBC, or similar).
-2. Text: All dialogue, captions, labels, and equations transcribed exactly and in reading order.
-3. Visual note: (only if there is a visual joke or pun that depends on the image — omit this section otherwise)
-
-Rules:
-- Use plain, neutral language throughout
-- Preserve all exact quoted text verbatim
-- Keep it concise — remove filler and redundant phrasing
-- Do not add information that isn't in the original transcript
-
-Output only the rewritten transcript, no preamble.`;
+const NORMALIZE_PROMPT =
+  'You are editing a webcomic transcript for consistency and accuracy.\n\n' +
+  'Output a JSON object with exactly these three fields (no markdown code fences, no preamble):\n' +
+  '{\n' +
+  '  "scene": "1-2 sentences: setting, characters, visual style. No comparisons to other webcomics like XKCD or SMBC.",\n' +
+  '  "text": "All dialogue, captions, labels, and equations verbatim in reading order. Preserve newlines between panels.",\n' +
+  '  "visualNote": "Visual jokes or puns that require seeing the image. Empty string if none."\n' +
+  '}\n\n' +
+  'Rules: neutral language, exact quoted text verbatim, concise, do not add information not in the original.';
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function normalize(client, transcript, comicNumber, retrying = false) {
+function flattenTranscript(t) {
+  if (!t) return '';
+  if (typeof t === 'string') return t;
+  return [t.scene, t.text, t.visualNote].filter(Boolean).join('\n\n');
+}
+
+function parseJsonResponse(raw) {
+  try {
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const parsed = JSON.parse(cleaned);
+    return {
+      scene: String(parsed.scene ?? '').trim(),
+      text: String(parsed.text ?? '').trim(),
+      visualNote: String(parsed.visualNote ?? '').trim(),
+    };
+  } catch {
+    return { scene: '', text: raw.trim(), visualNote: '' };
+  }
+}
+
+async function normalize(client, entry, retrying = false) {
+  const inputText = flattenTranscript(entry.transcript);
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1024,
-      messages: [{
-        role: 'user',
-        content: `${NORMALIZE_PROMPT}\n\n---\n\n${transcript}`,
-      }],
+      messages: [{ role: 'user', content: `${NORMALIZE_PROMPT}\n\n---\n\n${inputText}` }],
     });
-    return response.content[0].text.trim();
+    return parseJsonResponse(response.content[0].text.trim());
   } catch (err) {
     if (err instanceof Anthropic.RateLimitError && !retrying) {
-      console.warn(`  Rate limited on #${comicNumber}, waiting 60s...`);
+      console.warn(`  Rate limited on #${entry.number}, waiting 60s…`);
       await sleep(60_000);
-      return normalize(client, transcript, comicNumber, true);
+      return normalize(client, entry, true);
     }
-    console.error(`  Failed to normalize #${comicNumber}: ${err.message}`);
-    return transcript; // keep original on failure
+    console.error(`  Failed to normalize #${entry.number}: ${err.message}`);
+    // Keep existing — coerce to object if needed
+    return typeof entry.transcript === 'object'
+      ? entry.transcript
+      : { scene: '', text: entry.transcript ?? '', visualNote: '' };
   }
 }
 
 const data = JSON.parse(readFileSync(OUTPUT_FILE, 'utf8'));
-const toProcess = data.comics.filter(c => c.transcript && c.transcript.length > 0);
-console.log(`Normalizing ${toProcess.length} transcripts...`);
+const toProcess = data.comics.filter(c => flattenTranscript(c.transcript).length > 0);
+console.log(`Normalizing ${toProcess.length} transcripts…`);
 
 const client = new Anthropic();
 let done = 0;
 
 for (const entry of toProcess) {
-  entry.transcript = await normalize(client, entry.transcript, entry.number);
+  entry.transcript = await normalize(client, entry);
   done++;
   await sleep(100);
 
