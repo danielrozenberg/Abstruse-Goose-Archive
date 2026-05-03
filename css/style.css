@@ -155,6 +155,17 @@ a:hover { text-decoration: underline; color: var(--accent-hover); }
 }
 #search-input:focus { border-color: var(--accent); }
 
+/* ── Focus indicators ────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Suppress the default outline on elements that already have bespoke focus styles */
+#search-input:focus-visible { outline: none; }
+.search-result:focus-visible { outline: none; }
+
 #search-results {
   position: absolute;
   top: calc(100% + 4px);

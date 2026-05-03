@@ -183,7 +183,7 @@ function buildSearchResultHtml(fuseResult) {
   const num = item.number;
 
   if (_isNumber) {
-    return `<div class="search-result" data-number="${num}" role="option" tabindex="-1">
+    return `<div class="search-result" data-number="${num}" role="option" tabindex="-1" aria-selected="false">
       <span class="result-number">#${num}</span>
       <span class="result-title">${escapeHtml(item.title)}</span>
     </div>`;
@@ -193,14 +193,14 @@ function buildSearchResultHtml(fuseResult) {
   const textMatch = matches?.find(m => m.key !== 'title');
 
   if (titleMatch && !textMatch) {
-    return `<div class="search-result" data-number="${num}" role="option" tabindex="-1">
+    return `<div class="search-result" data-number="${num}" role="option" tabindex="-1" aria-selected="false">
       <span class="result-number">#${num}</span>
       <span class="result-title">${highlight(item.title, titleMatch.indices)}</span>
     </div>`;
   }
 
   const sourceText = textMatch?.key === 'comment' ? item.comment : item._transcriptText;
-  return `<div class="search-result search-result--text" data-number="${num}" role="option" tabindex="-1">
+  return `<div class="search-result search-result--text" data-number="${num}" role="option" tabindex="-1" aria-selected="false">
     <div class="result-header">
       <span class="result-number">#${num}</span>
       <span class="result-title">${escapeHtml(item.title)}</span>
@@ -239,8 +239,10 @@ function runSearch(query) {
 function updateSearchFocus() {
   const els = document.querySelectorAll('#search-results [data-number]');
   els.forEach((el, i) => {
-    el.classList.toggle('search-result--focused', i === searchFocusIdx);
-    if (i === searchFocusIdx) el.scrollIntoView({ block: 'nearest' });
+    const focused = i === searchFocusIdx;
+    el.classList.toggle('search-result--focused', focused);
+    el.setAttribute('aria-selected', focused ? 'true' : 'false');
+    if (focused) el.scrollIntoView({ block: 'nearest' });
   });
 }
 
@@ -287,6 +289,7 @@ function setImage(comic) {
   if (!comic.imageExists) {
     clearTimeout(imageSpinnerTimer);
     img.hidden = true;
+    img.alt = '';
     spinner.hidden = true;
     missing.hidden = false;
     return;
@@ -413,6 +416,7 @@ function toggleTab(n) {
     panel.offsetHeight; // force reflow
     activeTab = null;
     updateTabButtons();
+    panel.setAttribute('inert', '');
     panel.style.height = '0';
     return;
   }
@@ -420,6 +424,7 @@ function toggleTab(n) {
   const from = panel.offsetHeight; // 0 if closed, current px if switching
   activeTab = n;
   updateTabButtons();
+  panel.removeAttribute('inert');
   if (comic) renderTabContent(comic);
 
   // Measure target height without visual flash:
@@ -487,16 +492,20 @@ function renderComic(idx) {
   if (idx > 0) {
     prevLink.href = routeUrl('/' + state.comics[idx - 1].number);
     prevLink.removeAttribute('aria-disabled');
+    prevLink.removeAttribute('tabindex');
   } else {
     prevLink.removeAttribute('href');
     prevLink.setAttribute('aria-disabled', 'true');
+    prevLink.setAttribute('tabindex', '0');
   }
   if (idx < state.comics.length - 1) {
     nextLink.href = routeUrl('/' + state.comics[idx + 1].number);
     nextLink.removeAttribute('aria-disabled');
+    nextLink.removeAttribute('tabindex');
   } else {
     nextLink.removeAttribute('href');
     nextLink.setAttribute('aria-disabled', 'true');
+    nextLink.setAttribute('tabindex', '0');
   }
 
   document.getElementById('comic-display').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
