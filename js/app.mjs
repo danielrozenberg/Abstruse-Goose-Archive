@@ -210,6 +210,7 @@ function buildSearchResultHtml(fuseResult) {
 }
 
 function runSearch(query) {
+  if (!state.fuse) return [];
   const numQ = query.replace(/^#/, '');
   if (/^\d+$/.test(numQ)) {
     const hits = state.comics.filter(c => String(c.number).startsWith(numQ));
@@ -255,20 +256,23 @@ function handleSearch(query) {
   searchFocusIdx = -1;
   const resultsEl = document.getElementById('search-results');
   const inputEl = document.getElementById('search-input');
+  const statusEl = document.getElementById('search-status');
 
-  if (query.length < 2) { closeSearch(); return; }
+  if (query.length < 2) { closeSearch(); statusEl.textContent = ''; return; }
 
   const results = runSearch(query);
   if (!results.length) {
     resultsEl.innerHTML = '<div class="search-empty">No results found</div>';
     resultsEl.hidden = false;
     inputEl.setAttribute('aria-expanded', 'true');
+    statusEl.textContent = 'No results found';
     return;
   }
 
   resultsEl.innerHTML = results.map(buildSearchResultHtml).join('');
   resultsEl.hidden = false;
   inputEl.setAttribute('aria-expanded', 'true');
+  statusEl.textContent = `${results.length} result${results.length === 1 ? '' : 's'} found`;
 }
 
 // ── Image loading with spinner ────────────────────────────────────────────────
@@ -297,16 +301,27 @@ function setImage(comic) {
   spinner.hidden = true;
   clearTimeout(imageSpinnerTimer);
 
-  const onDone = () => {
+  // Remove stale listeners from any previous call
+  if (img._onLoad) { img.removeEventListener('load', img._onLoad); img._onLoad = null; }
+  if (img._onError) { img.removeEventListener('error', img._onError); img._onError = null; }
+
+  img._onLoad = () => {
     clearTimeout(imageSpinnerTimer);
-    img.removeEventListener('load', onDone);
-    img.removeEventListener('error', onDone);
+    img.removeEventListener('load', img._onLoad); img._onLoad = null;
     spinner.hidden = true;
     img.hidden = false;
   };
 
-  img.addEventListener('load', onDone);
-  img.addEventListener('error', onDone);
+  img._onError = () => {
+    clearTimeout(imageSpinnerTimer);
+    img.removeEventListener('error', img._onError); img._onError = null;
+    spinner.hidden = true;
+    img.hidden = true;
+    missing.hidden = false;
+  };
+
+  img.addEventListener('load', img._onLoad);
+  img.addEventListener('error', img._onError);
 
   img.src = newSrc;
   img.setAttribute('data-src', newSrc);
@@ -317,7 +332,7 @@ function setImage(comic) {
     if (img.hidden) spinner.hidden = false;
   }, 200);
 
-  if (img.complete && img.naturalWidth > 0) onDone();
+  if (img.complete && img.naturalWidth > 0) img._onLoad();
 }
 
 // ── Markdown renderer ─────────────────────────────────────────────────────────
@@ -346,11 +361,17 @@ function renderMarkdown(text) {
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 
 function updateTabButtons() {
+  const panel = document.getElementById('tab-panel');
   document.querySelectorAll('.tab-btn').forEach(btn => {
     const active = parseInt(btn.dataset.tab, 10) === activeTab;
     btn.setAttribute('aria-selected', active ? 'true' : 'false');
     btn.classList.toggle('tab-btn--active', active);
   });
+  if (activeTab !== null) {
+    panel.setAttribute('aria-labelledby', `tab-btn-${activeTab}`);
+  } else {
+    panel.removeAttribute('aria-labelledby');
+  }
 }
 
 function renderTabContent(comic) {
@@ -606,7 +627,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!el) return;
     const idx = state.comics.findIndex(c => c.number === parseInt(el.dataset.number, 10));
     if (idx >= 0) {
-      showComicView(idx);
       navigate('/' + state.comics[idx].number);
       searchInput.value = '';
       closeSearch();

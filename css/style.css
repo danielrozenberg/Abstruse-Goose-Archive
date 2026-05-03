@@ -7,7 +7,7 @@
   --bg-search-result-hover: #e8e8e8;
   --text: #222222;
   --text-muted: #666666;
-  --text-number: #999999;
+  --text-number: #666666;
   --border: #dddddd;
   --accent: #4a6fa5;
   --accent-hover: #3a5a8a;
@@ -28,7 +28,7 @@
     --bg-search-result-hover: #333333;
     --text: #e0e0e0;
     --text-muted: #999999;
-    --text-number: #666666;
+    --text-number: #999999;
     --border: #333333;
     --accent: #6a9fd8;
     --accent-hover: #8ab8e8;
@@ -47,6 +47,19 @@
 
 /* Ensure the hidden attribute works even on elements with explicit display values */
 [hidden] { display: none !important; }
+
+/* Visually hidden but available to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 html { scroll-behavior: smooth; }
 

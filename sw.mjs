@@ -23,7 +23,13 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match(INDEX).then(cached => cached || fetch(INDEX)),
+      fetch(INDEX)
+        .then(r => {
+          // Keep the cache fresh on each successful navigation
+          caches.open(CACHE).then(c => c.put(INDEX, r.clone()));
+          return r;
+        })
+        .catch(() => caches.match(INDEX)),
     );
   }
 });
