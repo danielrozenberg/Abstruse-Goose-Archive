@@ -556,7 +556,22 @@ kbd {
   width: 100%;
   margin: 0 auto;
   padding: 2rem 1rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "heading heading"
+    "about   labels"
+    "list    list";
+  column-gap: 2rem;
+  row-gap: 1.5rem;
+  align-items: start;
 }
+
+#index-main > h1 { grid-area: heading; }
+#index-about    { grid-area: about; margin-bottom: 0; }
+#ai-labels      { grid-area: labels; align-self: start; display: flex; flex-direction: column; gap: 0.75rem; }
+#ai-labels a    { display: block; line-height: 0; }
+#ai-labels img  { display: block; width: 104px; height: auto; }
 
 #index-main h1 {
   font-size: 1.5rem;
@@ -568,7 +583,6 @@ kbd {
   color: var(--text-muted);
   line-height: 1.75;
   max-width: 680px;
-  margin-bottom: 2rem;
 }
 #index-about p { margin-bottom: 0.65em; }
 #index-about p:last-child { margin-bottom: 0; }
@@ -645,6 +659,16 @@ kbd {
   #btn-prev, #btn-next, button { min-height: 44px; }
 
   #index-list { grid-template-columns: 1fr; }
+
+  #index-main {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "heading"
+      "about"
+      "list"
+      "labels";
+  }
+  #ai-labels { flex-direction: row; justify-content: center; }
 }
 
 /* ── Print ───────────────────────────────────────────────────────────────── */
